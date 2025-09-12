@@ -110,9 +110,9 @@ Recarga.prototype.aplicar = function () {
   console.log(
     "Recarga aplicada a " + this.tarjeta.id +
     ": +" + this.monto +
-    ". Saldo actual: " + this.tarjeta.saldo
+    ". Saldo actual: " + this.tarjeta.saldo 
   );
-};
+}; //Esto me hace ruido porque no deberian poder romper el encapsulamiento.
 
 
 // ================== SISTEMA CENTRAL ==================
