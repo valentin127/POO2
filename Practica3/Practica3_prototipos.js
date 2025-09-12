@@ -1,187 +1,174 @@
-// PADRE
-/*function Tarjeta(id, saldoInicial = 0, monedaBase = "ARS") {
+// ================== OBJETO MONEDA ==================
+function Moneda(aARS, desdeARS) {
+  // aARS:   función que pasa de esta moneda a pesos
+  // desdeARS: función que pasa de pesos a esta moneda
+  this.aARS = aARS;
+  this.desdeARS = desdeARS;
+}
+Moneda.prototype.convertirA = function (monto, otraMoneda) {
+  // Convierte a pesos y luego a la otra moneda
+  return otraMoneda.desdeARS(this.aARS(monto));
+};
+
+// Instancias concretas
+const Peso  = new Moneda(
+  function (m) { return m; },        // ARS -> ARS
+  function (m) { return m; }         // ARS -> ARS
+);
+const Libra = new Moneda(
+  function (m) { return m * 1250; }, // GBP -> ARS
+  function (m) { return m / 1250; }  // ARS -> GBP
+);
+
+
+// ================== CONVERSOR ==================
+function Conversor() {}
+Conversor.prototype.convertir = function (monto, desdeMoneda, haciaMoneda) {
+  // Sin if ni for: delega en los objetos Moneda
+  return desdeMoneda.convertirA(monto, haciaMoneda);
+};
+
+
+// ================== TARJETA BASE ==================
+function Tarjeta(id, saldoInicial, monedaBase, conversor) {
   this.id = id;
   this.saldo = saldoInicial;
-  this.monedaBase = monedaBase;
+  this.monedaBase = monedaBase;   // objeto Moneda
+  this._conv = conversor;
 }
 
-//La idea es definir como querramos pero usarla todos como privados.
-
-Tarjeta.CAMBIO_PESO_LIBRA = 1250; //miembros estaticos no vamos a usar
-Tarjeta.VALOR_EN_ARS ={ARS: 1,GBP: 1250};
-
-Tarjeta.prototype.consultarSaldo = function() {
-  return this.saldo; // aca debo retornar un numero y no un string. 
+Tarjeta.prototype.consultarSaldo = function () {
+  return this.saldo; // solo número
 };
 
-Tarjeta.prototype.convertir = function(monto, desde, hacia) {
-  if (desde === hacia) return monto;
-  if (desde === "ARS" && hacia === "GBP") return monto / Tarjeta.CAMBIO_PESO_LIBRA;
-  if (desde === "GBP" && hacia === "ARS") return monto * Tarjeta.CAMBIO_PESO_LIBRA; //Evitar el uso de if y poder resolverlo de otra manera.
-  throw new Error("Moneda no soportada: " + desde + " -> " + hacia);
+Tarjeta.prototype.convertir = function (monto, desdeMoneda, haciaMoneda) {
+  return this._conv.convertir(monto, desdeMoneda, haciaMoneda);
 };
 
-Tarjeta.prototype.pagarViaje = function() {
-  throw new Error("Método abstracto, implementar en subclase"); //Sacar los ifs y evitar el uso de los Strings.
-};  */
-
-function Tarjeta(id, saldoInicial = 0, monedaBase = "ARS") {
-  this.id = id;
-  this.saldo = saldoInicial;
-  this.monedaBase = monedaBase;
-}
-
-//Diccionario de equivalencias
-Tarjeta.VALOR_EN_ARS = {
-  ARS: 1,
-  GBP: 1250
-}; //No me sirve de manera que hay que idear un objeto.
-
-Tarjeta.prototype.consultarSaldo = function() {
-  return this.saldo; // solo el número
-};
-
-Tarjeta.prototype.convertir = function(monto, desde, hacia) {
-  if (!Tarjeta.VALOR_EN_ARS[desde] || !Tarjeta.VALOR_EN_ARS[hacia]) {
-    throw new Error("Moneda no soportada: " + desde + " -> " + hacia);
-  }
-  return monto * (Tarjeta.VALOR_EN_ARS[desde] / Tarjeta.VALOR_EN_ARS[hacia]);
-};
-
-Tarjeta.prototype.pagarViaje = function() {
+Tarjeta.prototype.pagarViaje = function () {
   throw new Error("Método abstracto, implementar en subclase");
 };
 
 
-// SUBE
-function TarjetaSube(id, saldoInicial = 0) {
-  Tarjeta.call(this, id, saldoInicial, "ARS"); // hereda de Tarjeta
+// ================== TARJETA SUBE ==================
+function TarjetaSube(id, saldoInicial, conversor) {
+  Tarjeta.call(this, id, saldoInicial, Peso, conversor);
 }
 TarjetaSube.prototype = Object.create(Tarjeta.prototype);
 TarjetaSube.prototype.constructor = TarjetaSube;
 
 TarjetaSube.SALDO_MINIMO = -600;
 
-TarjetaSube.prototype.cargarSaldo = function(monto, moneda = "ARS") {
-  if (monto <= 0) throw new Error("El monto a cargar debe ser mayor a 0.");
-  let montoEnPesos = this.convertir(monto, moneda, "ARS");
-  this.saldo += montoEnPesos;
-  console.log("SUBE " + this.id + ": cargados " + monto + " " + moneda + ". Saldo actual: $" + this.saldo);
+TarjetaSube.prototype.cargarSaldo = function (monto, monedaObj) {
+  if (monto <= 0) throw new Error("Monto a cargar debe ser mayor a 0.");
+  this.saldo += this.convertir(monto, monedaObj, Peso);
+  console.log("SUBE " + this.id + ": cargados " + monto + ". Saldo: $" + this.saldo);
 };
 
-TarjetaSube.prototype.pagarViaje = function(costo, moneda = "ARS") {
-  let costoEnPesos = this.convertir(costo, moneda, "ARS");
+TarjetaSube.prototype.pagarViaje = function (costo, monedaObj) {
+  const costoEnPesos = this.convertir(costo, monedaObj, Peso);
   if (this.saldo - costoEnPesos < TarjetaSube.SALDO_MINIMO) {
     throw new Error("Saldo insuficiente en SUBE.");
   }
   this.saldo -= costoEnPesos;
-  console.log("SUBE " + this.id + ": pagado viaje de " + costo + " " + moneda + ". Saldo actual: $" + this.saldo);
+  console.log("SUBE " + this.id + ": pagado " + costo + ". Saldo: $" + this.saldo);
 };
 
 
-// OYSTER
-function TarjetaOyster(id, saldoInicial = 0) {
-  Tarjeta.call(this, id, saldoInicial, "GBP");
+// ================== TARJETA OYSTER ==================
+function TarjetaOyster(id, saldoInicial, conversor) {
+  Tarjeta.call(this, id, saldoInicial, Libra, conversor);
 }
 TarjetaOyster.prototype = Object.create(Tarjeta.prototype);
 TarjetaOyster.prototype.constructor = TarjetaOyster;
 
-TarjetaOyster.prototype.cargarSaldo = function(monto, moneda = "GBP") {
-  if (monto <= 0) throw new Error("El monto a cargar debe ser mayor a 0.");
-  let montoEnLibras = this.convertir(monto, moneda, "GBP");
-  this.saldo += montoEnLibras;
-  console.log("OYSTER " + this.id + ": cargados " + monto + " " + moneda + ". Saldo actual: £" + this.saldo);
+TarjetaOyster.prototype.cargarSaldo = function (monto, monedaObj) {
+  if (monto <= 0) throw new Error("Monto a cargar debe ser mayor a 0.");
+  this.saldo += this.convertir(monto, monedaObj, Libra);
+  console.log("OYSTER " + this.id + ": cargados " + monto + ". Saldo: £" + this.saldo);
 };
 
-TarjetaOyster.prototype.pagarViaje = function(costo, moneda = "GBP") {
-  let costoEnLibras = this.convertir(costo, moneda, "GBP");
+TarjetaOyster.prototype.pagarViaje = function (costo, monedaObj) {
+  const costoEnLibras = this.convertir(costo, monedaObj, Libra);
   if (this.saldo < costoEnLibras) {
-    throw new Error("Saldo insuficiente en Oyster.");
+    throw new Error("Saldo insuficiente en OYSTER.");
   }
   this.saldo -= costoEnLibras;
-  console.log("OYSTER " + this.id + ": pagado viaje de " + costo + " " + moneda + ". Saldo actual: £" + this.saldo);
+  console.log("OYSTER " + this.id + ": pagado " + costo + ". Saldo: £" + this.saldo);
 };
 
 
-//OBJETO RECARGA.
-function Recarga(tarjeta, monto, moneda) {
+// ================== RECARGA ==================
+function Recarga(tarjeta, monto, monedaObj) {
   this.tarjeta = tarjeta;
   this.monto = monto;
-  this.moneda = moneda;
-  this.estado = "pendiente";
-  this.acreditado = false;
+  this.moneda = monedaObj;
 }
-
-Recarga.prototype.aplicar = function() {
-  let montoConvertido = this.tarjeta.convertir(this.monto, this.moneda, this.tarjeta.monedaBase);
-  this.tarjeta.saldo += montoConvertido;
-  console.log("Recarga aplicada a " + this.tarjeta.id + ": +" + this.monto + " " + this.moneda +
-              " (" + montoConvertido + " " + this.tarjeta.monedaBase + "). " +
-              "Saldo actual: " + this.tarjeta.saldo + " " + this.tarjeta.monedaBase);
+Recarga.prototype.aplicar = function () {
+  const convertido = this.tarjeta.convertir(this.monto, this.moneda, this.tarjeta.monedaBase);
+  this.tarjeta.saldo += convertido;
+  console.log(
+    "Recarga aplicada a " + this.tarjeta.id +
+    ": +" + this.monto +
+    ". Saldo actual: " + this.tarjeta.saldo
+  );
 };
 
 
-
-//Central
+// ================== SISTEMA CENTRAL ==================
 function SistemaCentralizado() {
   this.tarjetas = {};
 }
 
-SistemaCentralizado.prototype.registrarTarjeta = function(tarjeta) { //esto se puede hacer bien. 
+SistemaCentralizado.prototype.registrarTarjeta = function (tarjeta) {
   this.tarjetas[tarjeta.id] = tarjeta;
 };
 
-SistemaCentralizado.prototype.recargarTarjeta = function(id, monto, moneda = "ARS") {
-  let tarjeta = this.tarjetas[id];
-  if (!tarjeta) throw new Error("Tarjeta no encontrada");
-  let recarga = new Recarga(tarjeta, monto, moneda);
-  recarga.aplicar();
+SistemaCentralizado.prototype.recargarTarjeta = function (id, monto, monedaObj) {
+  const t = this.tarjetas[id];
+  if (!t) throw new Error("Tarjeta no encontrada");
+  new Recarga(t, monto, monedaObj).aplicar();
 };
 
-SistemaCentralizado.prototype.pagarViaje = function(id, costo, moneda = "ARS") {
-  let tarjeta = this.tarjetas[id];
-  if (!tarjeta) throw new Error("Tarjeta no encontrada");
-  tarjeta.pagarViaje(costo, moneda);
+SistemaCentralizado.prototype.pagarViaje = function (id, costo, monedaObj) {
+  const t = this.tarjetas[id];
+  if (!t) throw new Error("Tarjeta no encontrada");
+  t.pagarViaje(costo, monedaObj);
 };
 
-SistemaCentralizado.prototype.consultarSaldo = function(id) {
-  let tarjeta = this.tarjetas[id];
-  if (!tarjeta) throw new Error("Tarjeta no encontrada");
-  return tarjeta.consultarSaldo();
+SistemaCentralizado.prototype.consultarSaldo = function (id) {
+  const t = this.tarjetas[id];
+  if (!t) throw new Error("Tarjeta no encontrada");
+  return t.consultarSaldo();
 };
 
 
-
-
-// MAIN
+// ================== DEMO ==================
 try {
-  const sistema = new SistemaCentralizado(); //El sistema centralizado en base a function no podemos generar mas copias del sistema que deberia ser unico.
+  const conversor = new Conversor();
+  const sistema = new SistemaCentralizado();
 
-  // Crear tarjetas
-  let sube = new TarjetaSube("SUBE123", 1000);
-  let oyster = new TarjetaOyster("OYSTER123", 10);
+  const sube   = new TarjetaSube("SUBE123", 1000, conversor);
+  const oyster = new TarjetaOyster("OYSTER123", 10, conversor);
 
-  // Registrar tarjetas en el sistema
   sistema.registrarTarjeta(sube);
   sistema.registrarTarjeta(oyster);
 
   console.log("\n--- Recargas ---");
-  sistema.recargarTarjeta("SUBE123", 5, "Ars");     // carga en SUBE usando libras
-  sistema.recargarTarjeta("OYSTER123", 2500, "ARS"); // carga en Oyster usando pesos
+  sistema.recargarTarjeta("SUBE123", 5, Libra);     // 5 GBP en SUBE
+  sistema.recargarTarjeta("OYSTER123", 2500, Peso); // 2500 ARS en OYSTER
 
   console.log("\n--- Saldos ---");
   console.log("Saldo SUBE:", sistema.consultarSaldo("SUBE123"));
-  console.log("Saldo Oyster:", sistema.consultarSaldo("OYSTER123"));
+  console.log("Saldo OYSTER:", sistema.consultarSaldo("OYSTER123"));
 
   console.log("\n--- Pagos ---");
-  sistema.pagarViaje("SUBE123", 2, "GBP");    // SUBE paga un viaje en libras
-  sistema.pagarViaje("OYSTER123", 3000, "ARS"); // Oyster paga un viaje en pesos
+  sistema.pagarViaje("SUBE123", 2, Libra);    // SUBE paga 2 GBP
+  sistema.pagarViaje("OYSTER123", 3000, Peso); // OYSTER paga 3000 ARS
 
   console.log("\n--- Saldos Finales ---");
   console.log("Saldo SUBE:", sistema.consultarSaldo("SUBE123"));
-  console.log("Saldo Oyster:", sistema.consultarSaldo("OYSTER123"));
-}
-catch (e) {
+  console.log("Saldo OYSTER:", sistema.consultarSaldo("OYSTER123"));
+} catch (e) {
   console.error("Error:", e.message);
 }
-
