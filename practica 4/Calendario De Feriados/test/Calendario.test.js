@@ -1,30 +1,33 @@
 const { Empleado } = require('../src/Empleado');
-const { FrancoDiaParticular } = require('../src/Francos/FrancoDiaParticular');
+const { FrancoFactory } = require('../src/Francos/FrancoFactory');
 const { Calendario } = require('../src/Calendario');
 
 test('dice si un empleado específico está de franco en una fecha dada', () => {
-    const franco= new FrancoDiaParticular(new Date("2024-10-28T10:30:00Z"));     // Juan tiene franco el 2024-10-28.
-    const juan = new Empleado("Juan",[franco]);
+  const franco = FrancoFactory("DIA_PARTICULAR", {
+    fechaExacta: new Date("2024-10-28T10:30:00Z")
+  });
 
-    const calendario = new Calendario([juan]); // Creamos el calendario con un empleado Juan que tiene franco ese día.
+  const juan = new Empleado("Juan", [franco]);
 
-    const fechaConsulta = new Date("2024-10-28T10:30:00Z");
+  const calendario = new Calendario([juan]);
 
-    expect(calendario.estaDeFranco("Juan", fechaConsulta)).toBe(true);// Juan sí descansa ese día.
-    
+  const fechaConsulta = new Date("2024-10-28T10:30:00Z");
+
+  expect(calendario.estaDeFranco("Juan", fechaConsulta)).toBe(true);
 });
 
 test('dice si un empleado específico no está de franco en una fecha dada', () => {
-    const pedro = new Empleado("Pedro",[]); // Pedro NO tiene franco ese día, sin francos.
-    
-    const calendario = new Calendario([pedro]); // Creamos el calendario con un empleado pedro que no tiene franco ese día.
+  const pedro = new Empleado("Pedro", []); // Pedro no tiene francos
 
-    const fechaConsulta = new Date("2024-10-28T10:30:00Z");
-    expect(calendario.estaDeFranco("Pedro", fechaConsulta)).toBe(false); // Pedro no.
+  const calendario = new Calendario([pedro]);
+
+  const fechaConsulta = new Date("2024-10-28T10:30:00Z");
+
+  expect(calendario.estaDeFranco("Pedro", fechaConsulta)).toBe(false);
 });
 
-
-test('sino existe el empleado en el calendario', () => {
-  const coco = new Empleado("Coco",[]);
-  expect(()=>pizzeria.iniciarPedido()).not.toThrow(new Error("Empleado con nombre'+ nombreEmpleado +' no encontrado."));
+test('lanza un error si el empleado no existe en el calendario', () => {
+  const calendario = new Calendario([]);
+  const fechaConsulta = new Date("2024-10-28T10:30:00Z");
+  expect(() => {calendario.estaDeFranco("Coco", fechaConsulta);}).toThrow("Empleado no encontrado.");
 });

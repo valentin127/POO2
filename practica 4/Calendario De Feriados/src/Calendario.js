@@ -8,7 +8,7 @@ const Calendario = function (listaDeEmpleados) {
     ); // 1. Busco el empleado por nombre
 
     if (!empleado) {
-      throw new Error('Empleado con nombre'+ nombreEmpleado +' no encontrado.');
+      throw new Error('Empleado no encontrado.');
     }// 2. Si no existe ese empleado en el calendario, devuelvo false
         
     return empleado.tieneFranco(fecha); // 3. Delego en el empleado la consulta de si tiene franco esa fecha. (Agrego responsabilidad a empleado)

@@ -1,12 +1,12 @@
-const { FrancoDiaParticular } = require('./FrancoDiaParticular');
+const { crearFrancoDiaParticular } = require('./FrancoDiaParticular');
 
 function FrancoFactory(tipo, data) {
   switch (tipo) {
     case "DIA_PARTICULAR":
-      return new FrancoDiaParticular(data.fechaExacta);
+      return crearFrancoDiaParticular(data.fechaExacta);
 
     default:
-      throw new Error('Tipo de franco inválido: '+tipo+'.');
+      throw new Error('Tipo de franco inválido: ' + tipo + '.');
   }
 }
 
