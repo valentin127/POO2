@@ -1,14 +1,15 @@
-const Empleado = function (nombre, francos) {
-  this.nombre = nombre;
-  this.francos = francos; 
+// empleado.js
+function Empleado(nombre) {
+    this.nombre  = nombre;
+    this.francos = [];
+}
 
-  this.tieneFranco = function(fecha) {
+Empleado.prototype.agregarFranco = function(franco) {
+    this.francos.push(franco);
+};
+//Patron composite. 
+Empleado.prototype.esFranco = function(fecha) {
     return this.francos.some(franco => franco.esFranco(fecha));
-  };
-
-  this.getNombre = function() {
-    return this.nombre;
-  };
 };
 
-module.exports = { Empleado };
+module.exports = Empleado;

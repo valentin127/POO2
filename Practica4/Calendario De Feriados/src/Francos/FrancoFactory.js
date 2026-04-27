@@ -1,34 +1,33 @@
-const { crearFrancoDiaAnual } = require('./FrancoDiaAnual');
-const { crearFrancoDiaDeMesAnio } = require('./FrancoDiaDeMesAnio');
-const { crearFrancoDiaDeSemanaMes } = require('./FrancoDiaDeSemanaMes');
-const { FrancoDiaParticular } = require('./FrancoDiaParticular');
+// FrancoFactory.js
+var FrancoDiaParticular   = require("./FrancoDiaParticular");
+var FrancoDiaAnual        = require("./FrancoDiaAnual");
+var FrancoDeDeSemana      = require("./FrancoDeDeSemana");
+var FrancoDiaDeSemanaAnio = require("./FrancoDiaDeSemanaAnio");
+var FrancoDiaDeSemanaMes  = require("./FrancoDiaDeSemanaMes");
+var FrancoDiaDeMesAnio    = require("./FrancoDiaDeMesAnio");
+var MesCompleto           = require("./Mes_Completo");
 
-function FrancoFactory(tipo, data) {
-  switch (tipo) {
-    case "DIA_PARTICULAR":
-      return new FrancoDiaParticular(data.fechaExacta);
-    
-    case "DIA_ANUAL":
-      return crearFrancoDiaAnual(data.fechaExacta);
-    
-    case "DIA_SEMANAL":
-      return crearFrancoDeSemana(data.fechaExacta);
+function FrancoFactory() {}
 
-    case "DIA_SEMANAL_ANIO":
-      return crearFrancoDeSemanaAnio(data.fechaExacta);
+FrancoFactory.crear = function(tipo,...args) {
+    switch(tipo) {
+        case "FrancoDiaParticular":   
+          return new FrancoDiaParticular(...args);
+        case "FrancoDiaAnual":        
+          return new FrancoDiaAnual(...args);
+        case "FrancoDeDeSemana":      
+          return new FrancoDeDeSemana(...args);
+        case "FrancoDiaDeSemanaAnio": 
+          return new FrancoDiaDeSemanaAnio(...args);
+        case "FrancoDiaDeSemanaMes":  
+          return new FrancoDiaDeSemanaMes(...args);
+        case "FrancoDiaDeMesAnio":    
+          return new FrancoDiaDeMesAnio(...args);
+        case "MesCompleto":           
+          return new MesCompleto(...args);
+        default: 
+          throw new Error("Tipo desconocido.");
+    }
+};
 
-    case "DIA_SEMANAL_MES":
-      return crearFrancoDiaDeSemanaMes(data.fechaExacta);
-
-    case "DIA_MENSUAL_ANIO":
-      return crearFrancoDiaDeMesAnio(data.fechaExacta);
-    
-    case "MES_ANIO":
-      return crearFrancoMesCompleto(data.fechaExacta)
-
-    default:
-      throw new Error('Tipo de franco inválido: '+tipo+'.');
-  }
-}
-
-module.exports = { FrancoFactory };
+module.exports = FrancoFactory;

@@ -1,18 +1,16 @@
-const { Franco } = require('./Franco');
+// FrancoDiaAnual.js
+var Franco = require("./Franco");
 
-function crearFrancoDiaAnual(fechaBase) {
-  const franco = Object.create(Franco);
-
-  franco.fechaBase = fechaBase;
-
-  franco.esFranco = function(fechaConsulta) {
-    return this.fechaExacta.getMonth() === fechaConsulta.getMonth() &&
-           this.fechaExacta.getDate() === fechaConsulta.getDate();
-  };
-
-  return franco;
+function FrancoDiaAnual(dia, mes) {
+    this.dia = dia;
+    this.mes = mes;
 }
+FrancoDiaAnual.prototype = Object.create(Franco.prototype);
+FrancoDiaAnual.prototype.constructor = FrancoDiaAnual;
 
-module.exports = {
-  crearFrancoDiaAnual,
+FrancoDiaAnual.prototype.esFranco = function(fecha) {
+    return fecha.getDate()  === this.dia &&
+           fecha.getMonth()+1 === this.mes;
 };
+
+module.exports = FrancoDiaAnual;

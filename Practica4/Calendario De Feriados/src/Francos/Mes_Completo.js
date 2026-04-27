@@ -1,20 +1,16 @@
-const { Franco } = require('./Franco');
-function crearFrancoMesCompleto(anio, mes) {
-  const franco = Object.create(Franco);
+// Mes_Completo.js
+var Franco = require("./Franco");
 
-  franco.anio = anio;   
-  franco.mes = mes;     
-  
-  franco.esFranco = function(fechaConsulta) {
-    return (
-      fechaConsulta.getFullYear() === this.anio &&
-      fechaConsulta.getMonth() === this.mes
-    );
-  };
-
-  return franco;
+function MesCompleto(mes, anio) {
+    this.mes  = mes;
+    this.anio = anio;
 }
+MesCompleto.prototype = Object.create(Franco.prototype);
+MesCompleto.prototype.constructor = MesCompleto;
 
-module.exports = {
-  crearFrancoMesCompleto,
+MesCompleto.prototype.esFranco = function(fecha) {
+    return fecha.getMonth()    === this.mes &&
+           fecha.getFullYear() === this.anio;
 };
+
+module.exports = MesCompleto;

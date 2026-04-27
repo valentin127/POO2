@@ -1,19 +1,16 @@
-const { Franco } = require('./Franco');
+// FrancoDiaDeSemanaAnio.js
+var Franco = require("./Franco");
 
-function crearFrancoDiaDeSemanaMes(dia, anio) {
-  const franco = Object.create(Franco);
-
-  franco.dia = dia;
-  franco.anio = anio;
-
-  franco.esFranco = function(fechaConsulta) {
-    return fechaConsulta.getFullYear() === this.anio &&
-    fechaConsulta.getDate() === this.dia;
-  };
-
-  return franco;
+function FrancoDiaDeSemanaAnio(diaSemana, anio) {
+    this.diaSemana = diaSemana;
+    this.anio      = anio;
 }
+FrancoDiaDeSemanaAnio.prototype = Object.create(Franco.prototype);
+FrancoDiaDeSemanaAnio.prototype.constructor = FrancoDiaDeSemanaAnio;
 
-module.exports = {
-  crearFrancoDiaDeMesAnio,
+FrancoDiaDeSemanaAnio.prototype.esFranco = function(fecha) {
+    return fecha.getDay()      === this.diaSemana &&
+           fecha.getFullYear() === this.anio;
 };
+
+module.exports = FrancoDiaDeSemanaAnio;
