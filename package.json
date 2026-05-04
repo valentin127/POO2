@@ -1,0 +1,15 @@
+{
+  "name": "cola",
+  "version": "1.0.0",
+  "description": "Práctica Cola",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
